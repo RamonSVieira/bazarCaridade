@@ -5,6 +5,8 @@ class Usuario(models.Model):
     usuario = models.OneToOneField(User, on_delete=models.CASCADE)
     nome = models.CharField(max_length=255)
 
+    USERNAME_FIELD = 'usuario__email'
+
     def __str__(self):
         return self.nome
 

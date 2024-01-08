@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro de Usuário</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@10">
+</head>
+<body>
+    <h2>Cadastro de Usuário</h2>
+    <form method="post" action="">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Cadastrar</button>
+    </form>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+    {% if mensagem_erro %}
+    <script>
+        Swal.fire({
+            icon: 'error',
+            title: 'Erro',
+            text: '{{ mensagem_erro }}',
+        });
+    </script>
+    {% endif %}
+</body>
+</html>
