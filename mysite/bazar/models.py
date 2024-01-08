@@ -12,8 +12,8 @@ class Usuario(models.Model):
 
 class Evento(models.Model):
     nome = models.CharField(max_length=255)
-    inicio = models.DateTimeField()
-    fim = models.DateTimeField()
+    inicio = models.DateTimeField(auto_now_add=True)
+    fim = models.DateTimeField(blank=True, null=True)
     adm = models.ForeignKey(Usuario, on_delete=models.CASCADE)
 
     def __str__(self):

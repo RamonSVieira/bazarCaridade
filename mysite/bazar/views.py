@@ -1,10 +1,14 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import login
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import login, logout
+from django.contrib.auth.decorators import login_required
+from django.utils.decorators import method_decorator
+from django.http import Http404
 from django.views import View
 from .forms import UsuarioCadastroForm
 from .services import UsuarioService
-from .models import Usuario
-from .forms import LoginForm
+from .models import Usuario, Evento
+from .forms import LoginForm, EventoForm
+from django.http import JsonResponse
 
 def cadastrar_usuario(request):
     if request.method == 'POST':
@@ -41,7 +45,6 @@ def cadastrar_usuario(request):
             login(request, usuario.usuario)
             return redirect('bazar:logar')
         else:
-            # Se o formulário não for válido, continue exibindo o formulário
             return render(request, 'cadastro.html', {'form': form})
     else:
         form = UsuarioCadastroForm()
@@ -61,11 +64,64 @@ class LoginView(View):
             autenticado, nome = UsuarioService.autenticar_usuario(request, form)
 
             if autenticado:
-                # Login bem-sucedido
                 return render(request, 'logado.html', {'nome': nome})
             else:
-                # Login falhou
                 mensagem_erro = "Nome de usuário ou senha incorretos."
                 return render(request, self.template_name, {'form': form, 'mensagem_erro': mensagem_erro})
 
         return render(request, self.template_name, {'form': form})
+    
+def logout_usuario(request):
+    logout(request)
+    return redirect('bazar:logar')
+
+# EVENTO
+@method_decorator(login_required, name='dispatch')
+class EventoView(View):
+    template_name = 'evento_list.html'
+
+    def get(self, request):
+        eventos = Evento.objects.filter(adm=request.user.usuario)
+        return render(request, self.template_name, {'eventos': eventos})
+    
+@method_decorator(login_required, name='dispatch')
+class CriarEventoView(View):
+    template_name = 'evento_form.html'
+
+    def get(self, request):
+        form = EventoForm()
+        return render(request, self.template_name, {'form': form})
+
+    def post(self, request):
+        form = EventoForm(request.POST)
+        if form.is_valid():
+            evento = form.save(commit=False)
+            evento.adm = request.user.usuario
+            evento.save()
+            return redirect('bazar:evento_list')
+        return render(request, self.template_name, {'form': form})
+    
+@method_decorator(login_required, name='dispatch')
+class EventoUpdateView(View):
+    template_name = 'evento_form.html'
+
+    def get(self, request, eventoid):
+        evento = get_object_or_404(Evento, id=eventoid, adm=request.user.usuario)
+        form = EventoForm(instance=evento)
+        return render(request, self.template_name, {'form': form, 'evento': evento})
+
+    def post(self, request, eventoid):
+        evento = get_object_or_404(Evento, id=eventoid, adm=request.user.usuario)
+        form = EventoForm(request.POST, instance=evento)
+        if form.is_valid():
+            form.save()
+            return redirect('bazar:evento_list')
+        return render(request, self.template_name, {'form': form, 'evento': evento})
+    
+@method_decorator(login_required, name='dispatch')
+class EventoDeleteView(View):
+
+    def post(self, request, eventoid):
+        evento = get_object_or_404(Evento, id=eventoid, adm=request.user.usuario)
+        evento.delete()
+        return JsonResponse({'status': 'ok'})

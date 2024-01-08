@@ -7,5 +7,9 @@
 </head>
 <body>
     <p>Seja bem-vindo, {{ nome }}!</p>
+    <hr>
+    <a href="{% url 'bazar:evento_list' %}">MEUS EVENTOS</a>
+    <hr>
+    <a href="{% url 'bazar:logout' %}">Sair</a>
 </body>
 </html>

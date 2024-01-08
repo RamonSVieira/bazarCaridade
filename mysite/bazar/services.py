@@ -13,7 +13,6 @@ class UsuarioService:
             usuario = Usuario.objects.create(usuario=user, nome=nome)
             return usuario
         else:
-            # Lidere com o caso em que o e-mail já está cadastrado
             raise ValueError("Este e-mail já está cadastrado.")
 
     
@@ -22,13 +21,10 @@ class UsuarioService:
         email = form.cleaned_data['email']
         password = form.cleaned_data['password']
 
-        # Autentique o usuário
         user = authenticate(request, username=email, password=password)
 
         if user is not None:
-            # Login bem-sucedido
             login(request, user)
             return True, user.usuario.nome
         else:
-            # Login falhou
             return False, None

@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Eventos</title>
+</head>
+<body>
+    <h2>Lista de Eventos</h2>
+
+    <a href="{% url 'bazar:evento_create' %}">Cadastrar Novo Evento</a>
+
+    {% if eventos %}
+        <ul>
+            {% for evento in eventos %}
+                <li>
+                    {{ evento.nome }}
+                    <a href="{% url 'bazar:evento_update' eventoid=evento.id %}">Atualizar</a>
+                    <a href="#" onclick="confirmarExclusao({{ evento.id }})">Deletar</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Nenhum evento encontrado.</p>
+    {% endif %}
+
+    <hr>
+    <a href="{% url 'bazar:logout' %}">Sair</a>
+
+    <script>
+        function confirmarExclusao(eventoId) {
+            var confirmacao = confirm("Tem certeza que deseja excluir este evento?");
+            if (confirmacao) {
+                fetch("{% url 'bazar:evento_delete' eventoid=0 %}".replace('0', eventoId), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}',
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'ok') {
+                        location.reload();
+                    } else {
+                        alert('Erro ao excluir o evento.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Erro:', error);
+                    alert('Erro ao excluir o evento.');
+                });
+            }
+        }
+    </script>
+</body>
+</html>
