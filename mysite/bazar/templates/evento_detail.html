@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Evento</title>
+    <style>
+        .item-not-available {
+            text-decoration: line-through;
+        }
+    </style>
+</head>
+<body>
+    <h2>Detalhes do Evento: {{ evento.nome }}</h2>
+
+    <h3>Itens Cadastrados:</h3>
+    <ul>
+        {% if itens %}
+            {% for item in itens %}
+                <li {% if not item.disponivel %}class="item-not-available"{% endif %}>
+                    {{ item.nome }} - {{ item.descricao }} - {{ item.preco }}
+                </li>
+            {% endfor %}
+        {% else %}
+            <li>Ainda não existem itens cadastrados.</li>
+        {% endif %}
+    </ul>
+
+    <hr>
+
+    <h3>Cadastrar Novo Item:</h3>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Cadastrar Item</button>
+    </form>
+
+    <hr>
+    <a href="{% url 'bazar:evento_list' %}">Voltar para a lista de eventos</a>
+</body>
+</html>

@@ -4,7 +4,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.forms.widgets import SelectDateWidget
 from datetime import datetime
 
-from .models import Usuario, Evento
+from .models import Usuario, Evento, Item
 
 class UsuarioCadastroForm(forms.Form):
     nome = forms.CharField(max_length=255, required=False)
@@ -39,3 +39,8 @@ class EventoForm(forms.ModelForm):
 
     def clean_inicio_display(self):
         return self.fields['inicio_display'].initial
+    
+class ItemForm(forms.ModelForm):
+    class Meta:
+        model = Item
+        fields = ['nome', 'foto', 'descricao', 'preco', 'disponivel']

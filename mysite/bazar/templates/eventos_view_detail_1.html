@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ evento.nome }}</title>
+</head>
+<body>
+    <h2>{{ evento.nome }}</h2>
+    <p>Data de Início: {{ evento.inicio }}</p>
+    <p>Data de Fim: {{ evento.fim }}</p>
+
+    <h3>Itens Ativos:</h3>
+    {% if itens %}
+        <ul>
+            {% for item in itens %}
+                <li>{{ item.nome }} - {{ item.descricao }} - {{ item.preco }}</li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>Não há itens ativos neste evento.</p>
+    {% endif %}
+
+    <hr>
+    <a href="{% url 'bazar:logar' %}">Voltar</a>
+</body>
+</html>

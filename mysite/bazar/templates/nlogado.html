@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logado</title>
+</head>
+<body>
+    <div>
+        <p>Seja bem-vindo</p>
+        <hr>
+        <h3>Eventos Ativos:</h3>
+        {% if eventos_ativos %}
+            <ul>
+                {% for evento in eventos_ativos %}
+                    <li>{{ evento.nome }} - {{ evento.inicio }} - {{ evento.fim }}</li>
+                    <a href="{% url 'bazar:evento_detail_view' eventoid=evento.id %}">Detalhes</a>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <p>Não há eventos ativos no momento.</p>
+        {% endif %}
+    </div>
+
+    <div>
+        <p>Para acessar mais funcionalidades:</p>
+        <ul>
+            <li><a href="{% url 'bazar:logar' %}">Login</a></li>
+            <li><a href="{% url 'bazar:cadastrar_usuario' %}">Cadastre-se</a></li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -16,6 +16,7 @@
                 <li>
                     {{ evento.nome }}
                     <a href="{% url 'bazar:evento_update' eventoid=evento.id %}">Atualizar</a>
+                    <a href="{% url 'bazar:evento_detail' eventoid=evento.id %}">Detalhes</a>
                     <a href="#" onclick="confirmarExclusao({{ evento.id }})">Deletar</a>
                 </li>
             {% endfor %}
@@ -25,6 +26,7 @@
     {% endif %}
 
     <hr>
+    <a href="{% url 'bazar:logar' %}">Voltar</a>
     <a href="{% url 'bazar:logout' %}">Sair</a>
 
     <script>

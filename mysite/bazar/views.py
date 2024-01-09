@@ -6,9 +6,17 @@ from django.http import Http404
 from django.views import View
 from .forms import UsuarioCadastroForm
 from .services import UsuarioService
-from .models import Usuario, Evento
-from .forms import LoginForm, EventoForm
+from .models import Usuario, Evento, Item
+from .forms import LoginForm, EventoForm, ItemForm
 from django.http import JsonResponse
+from django.views.generic import TemplateView
+from datetime import date
+from django.contrib.auth.models import AnonymousUser
+
+def get_eventos_ativos(usuario):
+    if isinstance(usuario, AnonymousUser):
+        return None  
+    return Evento.objects.filter(fim__gte=date.today())
 
 def cadastrar_usuario(request):
     if request.method == 'POST':
@@ -50,12 +58,28 @@ def cadastrar_usuario(request):
         form = UsuarioCadastroForm()
         return render(request, 'cadastro.html', {'form': form})
     
-class LoginView(View):
-    template_name = 'login.html'
-    
+
+class HomeView(View):
+    template_name = 'nlogado.html'
+
     def get(self, request):
-        form = LoginForm()
-        return render(request, self.template_name, {'form': form})
+        eventos_ativos = self.get_eventos_ativos()
+        return render(request, self.template_name, {'eventos_ativos': eventos_ativos})
+
+    def get_eventos_ativos(self):
+        return Evento.objects.filter(fim__gte=date.today())
+
+class LoginView(View):
+    template_name_login = 'login.html'
+    template_name_logado = 'logado.html'
+
+    def get(self, request):
+        if request.user.is_authenticated:
+            eventos_ativos = get_eventos_ativos(request.user)
+            return render(request, self.template_name_logado, {'nome': request.user.usuario.nome, 'eventos_ativos': eventos_ativos})
+        else:
+            form = LoginForm()
+            return render(request, self.template_name_login, {'form': form})
 
     def post(self, request):
         form = LoginForm(request.POST)
@@ -64,12 +88,15 @@ class LoginView(View):
             autenticado, nome = UsuarioService.autenticar_usuario(request, form)
 
             if autenticado:
-                return render(request, 'logado.html', {'nome': nome})
+                eventos_ativos = get_eventos_ativos(request.user)
+                return render(request, self.template_name_logado, {'nome': nome, 'eventos_ativos': eventos_ativos})
             else:
                 mensagem_erro = "Nome de usuário ou senha incorretos."
-                return render(request, self.template_name, {'form': form, 'mensagem_erro': mensagem_erro})
+                return render(request, self.template_name_login, {'form': form, 'mensagem_erro': mensagem_erro})
 
-        return render(request, self.template_name, {'form': form})
+        return render(request, self.template_name_login, {'form': form})
+
+
     
 def logout_usuario(request):
     logout(request)
@@ -125,3 +152,40 @@ class EventoDeleteView(View):
         evento = get_object_or_404(Evento, id=eventoid, adm=request.user.usuario)
         evento.delete()
         return JsonResponse({'status': 'ok'})
+
+class EventoDetailView(View):
+    template_name = 'evento_detail.html'
+
+    def get(self, request, eventoid):
+        evento = get_object_or_404(Evento, id=eventoid, adm=request.user.usuario)
+        itens = Item.objects.filter(evento=evento)
+        form = ItemForm()
+
+        return render(request, self.template_name, {'evento': evento, 'itens': itens, 'form': form})
+
+    def post(self, request, eventoid):
+        evento = get_object_or_404(Evento, id=eventoid, adm=request.user.usuario)
+        form = ItemForm(request.POST, request.FILES)
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.evento = evento
+            item.save()
+            return redirect('bazar:evento_detail', eventoid=eventoid)
+        else:
+            itens = Item.objects.filter(evento=evento)
+            return render(request, self.template_name, {'evento': evento, 'itens': itens, 'form': form})
+        
+class EventoViewDetail(View):
+    template_name = 'eventos_view_detail.html'
+    template_name_authenticated = 'eventos_view_detail_1.html'
+
+    def get(self, request, eventoid):
+        evento = get_object_or_404(Evento, id=eventoid)
+        itens = Item.objects.filter(evento=evento)
+
+        if request.user.is_authenticated:
+            template_name = self.template_name_authenticated
+        else:
+            template_name = self.template_name
+
+        return render(request, template_name, {'evento': evento, 'itens': itens})
